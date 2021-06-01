@@ -191,4 +191,84 @@ fn main() {
 
     // If we were to write the equivalent in C++ we'd need at least 30 lines of code (see page 343 and 344) just to start. By the time it's written out, the C++ library will require studying to understand how everything works. This is compared to Rust's 8 lines of code.
 
+
+
+    // Generic Enums
+
+    // Enums can be generic. Two examples from the standard library are among the most-used data types in the language:
+    enum Option<T> {
+        None,
+        Some(T)
+    }
+
+    enum Result<T, E> {
+        Ok(T),
+        Err(E)
+    }
+
+    // These types are familiar enough by now, and the syntax for generic enums is the same as for generic structs. One unobvious detail is that Rust can eliminate the tag field of Option<T> when the type T is a Box or some other smart pointer type. An Option<Box<i32>> is stored in memory as a single machine word, 0 for None and nonzero for Some boxed value.
+
+    // Generic data structures can be built with just a few lines of code:
+    // An ordered collection of `T`s.
+    enum BinaryTree<T> {
+        Empty,
+        NonEmpty(Box<TreeNode<T>>)
+    }
+
+    // A part of a BinaryTree.
+    struct TreeNode<T> {
+        element: T,
+        left: BinaryTree<T>,
+        right: BinaryTree<T>
+    }
+
+    // These few lines of code define a BinaryTree type that can store any number of values of type T.
+
+    // Each BinaryTree value is either Empty or NonEmpty. If it's Empty, then it contains no data at all. If NonEmpty, then it has a Box, a pointer to a heap-allocated TreeNode.
+
+    // Each TreeNode value contains one actual element, as well as two more BinaryTree values. This means a tree can contain subtrees, and thus a NonEmpty tree can have any number of descendants.
+
+    // See page 347 for a diagram. As with Option<Box<T>>, Rust eliminates the tag fields, so a BinaryTree value is just one machine word.
+
+    // See diagram, building any particular node in the tree is straightforward:
+    use self::BinaryTree::*;
+    
+    let jupiter_tree = NonEmpty(Box::new(TreeNode {
+        element: "Jupiter",
+        left: Empty,
+        right: Empty
+    }));
+
+    // Larger trees can be built from smaller ones:
+    let mars_tree = NonEmpty(Box::new(TreeNode {
+        element: "Mars",
+        left: jupiter_tree,
+        right: mercury_tree
+    }));
+
+    // This assignment transfer ownership of jupiter_node and mercury_node to their new parent node.
+
+    // The remaining parts of the tree follow the same patterns. The root node is no different from the others:
+    let tree = NonEmpty(Box::new(TreeNode {
+        element: "Saturn",
+        left: mars_tree,
+        right: uranus_tree
+    }));
+
+    // Later in the chapter, we'll see how to implement an add method on the BinaryTree type so that we can instead write:
+    let mut tree = BinaryTree::Empty;
+    for planet in planets {
+        tree.add(planet);
+    }
+
+    // No matter what language we're coming from, creating data structures like BinaryTree in Rust will likely take some practice. It won't be obvious at first where to put the Boxes. One way to find a design that will work is to draw a picture (see earlier diagram, pg 346) that shows how we want things laid out in memory. Then work backward from the picture to the code. Each collection of rectangles is a struct or tuple. Each arrow is a Box or other smart pointer. Figuring out the type of each field is a bit of a puzzle, but a manageable one. The reward is control over our program's memory usage.
+
+    // Now comes the "price" mentioned in the into. The tag field of an enum costs a little memory, up to 8 bytes in the worst case, but that is usually negligible. The real downside to enums (if it can be called that) is that Rust code cannot throw caution to the wind and try to access fields regardless of whether they are actually present in the value:
+    let r = shape.radius; // error: no field `radius` on type `Shape`
+
+    // The only way to access the data in an enum is the safe way, using patterns.
+
+
+
+
 }
