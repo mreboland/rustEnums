@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 fn main() {
     println!("Hello, world!");
 
@@ -166,5 +168,27 @@ fn main() {
     // In memory, enums with data are stored as a small integer tag, plus enough memory to hold all the fields of the largest variant. The tag field is for Rust's internal use. It tells which constructor created the value, and therefore which fields it has. See page 341 for a diagram.
 
     // Rust makes no promises about enum layout, however, in order to leave the door open for future optimizations. In some cases, it would be possible to pack an enum more efficiently than the figure suggests. Later in the chapter we'll show how Rust can optimize away the tag field for some enums.
+
+
+
+    // Rich Data Structures Using Enums
+
+    // Enums are also useful for quickly implementing tree-like data structures. For example, suppose a Rust program needs to work with arbitrary JSON data. In memory, any JSON document can be represented as a value of this Rust type:
+    enum Json {
+        Null,
+        Boolean(bool),
+        Number(f64),
+        String(String),
+        Array(Vec<Json>),
+        Object(Box<HashMap<String, Json>>)
+    }
+
+    // The JSON standard specifies the various data types that can appear in a JSON document. null, Boolean values, numbers, strings, arrays of JSON values, and objects with string keys and JSON values. The Json enum simply spells out these types.
+
+    // The Box around the HashMap that represents an Object serves only to make all Json values more compact. In memory, values of type Json take up four machine words. String and Vec values are three words, and Rust adds a tag byte. Null and Boolean values don't have enough data in them to use up all that space, but Json values must be the same size. The extra space goes unused. See page 342 for diagram.
+
+    // A HashMap is larger still. If we had to leave room for it in every Json value, they would be quite large, eight words or so. But a Box<HashMap> is a single word. It's just a pointer to heap-allocated data. We could make Json even more compact by boxing more fields.
+
+    // If we were to write the equivalent in C++ we'd need at least 30 lines of code (see page 343 and 344) just to start. By the time it's written out, the C++ library will require studying to understand how everything works. This is compared to Rust's 8 lines of code.
 
 }
