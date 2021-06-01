@@ -159,4 +159,12 @@ fn main() {
 
     // All constructors and fields of a public enum are automatically public.
 
+
+
+    // Enums in Memory
+
+    // In memory, enums with data are stored as a small integer tag, plus enough memory to hold all the fields of the largest variant. The tag field is for Rust's internal use. It tells which constructor created the value, and therefore which fields it has. See page 341 for a diagram.
+
+    // Rust makes no promises about enum layout, however, in order to leave the door open for future optimizations. In some cases, it would be possible to pack an enum more efficiently than the figure suggests. Later in the chapter we'll show how Rust can optimize away the tag field for some enums.
+
 }
